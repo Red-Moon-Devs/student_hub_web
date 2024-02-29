@@ -101,6 +101,46 @@ async function fetchAllChildThreads(threadId: string): Promise<any[]> {
   return descendantThreads;
 }
 
+export async function likeThread(id: string, userId: string, path: string) {
+  try {
+    connectToDB();
+
+    // Find the thread to be deleted (the main thread)
+    const mainThread = await Thread.findById(id).populate("author community");
+
+    if (!mainThread) {
+      throw new Error("Thread not found");
+    }
+    const likedByUser = await User.findOne({
+      id: userId
+    })
+
+    if (!likedByUser) {
+      throw new Error("User not found");
+    }
+    // check if the user has already liked the thread
+    const isLiked = mainThread.likedBy.includes(likedByUser.id);
+    if (isLiked) {
+      console.log("Thread already liked")
+      throw new Error("Thread already liked");
+    }
+    const updatedLikes = mainThread.likes + 1;
+    const updatedLikesBy = mainThread.likedBy;
+    updatedLikesBy.push(likedByUser.id)
+    // update the likes and the likesBy fields
+    await Thread.findByIdAndUpdate(
+      id,
+      {
+        likes: updatedLikes,
+        likedBy: updatedLikesBy
+      }
+    )
+    revalidatePath(path);
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export async function deleteThread(id: string, path: string): Promise<void> {
   try {
     connectToDB();

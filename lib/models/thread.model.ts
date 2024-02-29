@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { string } from "zod";
 
 const threadSchema = new mongoose.Schema({
   text: {
@@ -25,6 +26,16 @@ const threadSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Thread",
+    },
+  ],
+  likes: {
+    type: Number,
+    default: 0,
+  },
+  likedBy: [
+    {
+      type: String,
+      // ref: "User",
     },
   ],
 });
